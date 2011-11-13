@@ -1,0 +1,17 @@
+def configure(conf):
+  conf.env.INCLUDES_qwt = '/usr/include/qwt'
+
+
+def build(bld):
+  bld.read_shlib('qwt')
+
+  bld.read_shlib('vc-gdm70x')
+
+  bld(
+    features = 'qt4 cxx cxxprogram',
+    uselib   = 'QTCORE QTGUI qwt',
+    use      = 'qwt vc-gdm70x',
+    source   = 'main.cpp mainwindow.cpp mainwindow.ui multimeteradapter.cpp voltcraftgdm70x.cpp',
+    includes = '.',
+    target   = 'mmgui',
+  )
