@@ -2,9 +2,9 @@
 mmgui - A graphical capture and read aout applicatin for digital
         multimeters
 
-Copyright (C) <2011>  Andreas Messer <andi@bastelmap.de>
+Copyright (C) 2011  Andreas Messer <andi@bastelmap.de>
 
-This program is free software: you can redistribute it and/or modify
+mmgui is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "voltcraftgdm70x.h"
 
 #include <QDateTime>
-#include <cstdio>
+#include <QDir>
 
 using namespace std;
 
@@ -143,13 +143,26 @@ VoltcraftGDM70x::readyRead()
 
 }
 
-
-template<>
-void
-MultimeterAdapterRegistrar<VoltcraftGDM70x>::scan()
+QStringList
+VoltcraftGDM70x::findDevices()
 {
-  addDevice("/dev/ttyS0");
+    QStringList filters;
+
+    filters << "ttyS*"
+            << "ttyUSB*";
+
+    QFileInfoList list = QDir("/dev").entryInfoList(filters,
+                                                    QDir::System | QDir::Readable | QDir::Writable | QDir::Files,
+                                                    QDir::Name);
+
+    QStringList devices;
+
+    for(int i = 0; i < list.count(); i++)
+        devices.append(list.at(i).absoluteFilePath());
+
+    return devices;
 }
+
 
 MultimeterAdapterRegistrar<VoltcraftGDM70x> registrar("Voltcraft GDM 703/704/705", "vc_gdm70x");
 

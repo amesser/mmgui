@@ -2,9 +2,9 @@
 mmgui - A graphical capture and read aout applicatin for digital
         multimeters
 
-Copyright (C) <2011>  Andreas Messer <andi@bastelmap.de>
+Copyright (C) 2011  Andreas Messer <andi@bastelmap.de>
 
-This program is free software: you can redistribute it and/or modify
+mmgui is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -39,13 +39,6 @@ public:
 
   }
 
-  MultimeterAdapterDescriptor(const MultimeterAdapterDescriptor & src) :
-    name(src.name),
-    uri(src.uri)
-  {
-
-  }
-
   virtual MultimeterAdapter* createAdapter() const = 0;
 
   const QString & getName() const {return name;}
@@ -70,7 +63,9 @@ public:
   virtual QString            getChannelReading(int channel) const = 0;
 
   virtual const SampleList & getSamplesList(int channel) const;
-  virtual QString      getSamplesUnit(int channel) const = 0;
+  virtual QString            getSamplesUnit(int channel) const = 0;
+
+  static QStringList         findDevices();
 
   static MultimeterAdapter *                createAdapter(const QString uri);
   static MultimeterAdapterDescriptorList &  getAdapterDescriptorList();
@@ -104,7 +99,10 @@ public:
     id(id),
     name(name)
   {
-    scan();
+      QStringList devices = T::findDevices();
+
+      while(!devices.isEmpty())
+          addDevice(devices.takeFirst());
   }
 
   void addDevice(const QString & device)
@@ -123,8 +121,6 @@ public:
                   name + " [" + device + "]",
                   uri));
   }
-
-  void scan();
 
 private:
   const QString id;

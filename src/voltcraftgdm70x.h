@@ -2,9 +2,9 @@
 mmgui - A graphical capture and read aout applicatin for digital
         multimeters
 
-Copyright (C) <2011>  Andreas Messer <andi@bastelmap.de>
+Copyright (C) 2011  Andreas Messer <andi@bastelmap.de>
 
-This program is free software: you can redistribute it and/or modify
+mmgui is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -38,6 +38,7 @@ public:
   virtual QString getChannelReading(int channel) const;
   virtual QString getSamplesUnit(int channel) const;
 
+  static QStringList         findDevices();
 signals:
 
 public slots:

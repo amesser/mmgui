@@ -4,6 +4,9 @@ APPNAME='mmgui'
 top = '.'
 out = 'build'
 
+import waflib.Configure
+waflib.Configure.autoconfig = True
+
 def options(opt):
   opt.load('compiler_cxx qt4')
 
