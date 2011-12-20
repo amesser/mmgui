@@ -1,0 +1,7 @@
+build
+.lock-waf*
+mmgui.config
+mmgui.creator
+mmgui.creator.user
+mmgui.files
+mmgui.includes

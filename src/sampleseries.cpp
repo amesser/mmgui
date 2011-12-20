@@ -17,41 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "sampleseries.h"
 
-#include <QMainWindow>
-
-#include <qwt_plot_curve.h>
-#include "multimeteradapter.h"
-
-namespace Ui {
-    class MainWindow;
+SampleSeries::SampleSeries(SampleUnit unit):
+    QwtPointSeriesData(),
+    m_unit(unit)
+{
 }
 
-class MainWindow : public QMainWindow
+void
+SampleSeries::addSample(QPointF sample)
 {
-    Q_OBJECT
-
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-
-  static const char* toString(SampleUnit unit);
-
-public slots:
-  void changeAdapter();
-  void refreshData();
-  void refreshAdapters();
-
-  const QColor & getChannelColor(int channel) const;
-
-  void sampleSeriesAdded(int index);
-  void sampleSeriesReset();
-
-private:
-    Ui::MainWindow    *ui;
-    MultimeterAdapter *adapter;
-};
-
-#endif // MAINWINDOW_H
+    d_samples.append(sample);
+}

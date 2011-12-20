@@ -27,8 +27,6 @@ using namespace std;
 VoltcraftGDM70x::VoltcraftGDM70x(const QString & uri, QObject *parent) :
     MultimeterAdapter(parent)
 {
-  setChannelCount(2);
-
   vc = vc_gdm70x_create();
 
   try {
@@ -83,6 +81,21 @@ VoltcraftGDM70x::getUnit(enum vc_unit u)
   return units[u];
 }
 
+const MultimeterAdapter::ReadingsList
+VoltcraftGDM70x::getCurrentReadings()
+{
+  ReadingsList readings;
+
+  readings.append(ReadingsList::value_type(toMMGUIUnit(vc->data1.unit),
+                            toValue(vc->data1)));
+
+  readings.append(ReadingsList::value_type(toMMGUIUnit(vc->data2.unit),
+                            toValue(vc->data2)));
+
+  return readings;
+}
+
+/*
 QString
 VoltcraftGDM70x::getChannelReading(int channel) const
 {
@@ -101,6 +114,24 @@ VoltcraftGDM70x::getSamplesUnit(int channel) const
   else
     return getUnit(vc->data2.unit);
 }
+*/
+
+qreal
+VoltcraftGDM70x::toValue(const vc_gdm70x_data &data)
+{
+  qreal mult = 0;
+
+  switch (data.mult) {
+  case MEGA : mult = 1e6;  break;
+  case KILO : mult = 1e3;  break;
+  case NONE : mult = 1;    break;
+  case MILLI: mult = 1e-3; break;
+  case MICRO: mult = 1e-6; break;
+  case NANO:  mult = 1e-9; break;
+  }
+
+  return data.value * mult;
+}
 
 void
 VoltcraftGDM70x::readyRead()
@@ -109,38 +140,63 @@ VoltcraftGDM70x::readyRead()
 
   vc_gdm70x_do(this->vc, 1);
 
-  qreal channel1 = 0,channel2 = 0;
-
-  switch (vc->data1.mult) {
-  case MEGA : channel1 = 1e6; break;
-  case KILO : channel1 = 1e3; break;
-  case NONE : channel1 = 1;   break;
-  case MILLI: channel1 = 1e-3;break;
-  case MICRO: channel1 = 1e-6;break;
-  case NANO: channel1 = 1e-9; break;
-  }
-
   if (vc->data1.unit != UNKNOWN)
   {
-    addSample(0,time,channel1 * vc->data1.value);
-  }
+    if (NULL == m_samplesChannel1)
+      m_samplesChannel1 = createSampleSeries(toMMGUIUnit(vc->data1.unit));
 
-  switch (vc->data2.mult) {
-  case MEGA : channel2 = 1e6; break;
-  case KILO : channel2 = 1e3; break;
-  case NONE : channel2 = 1;   break;
-  case MILLI: channel2 = 1e-3;break;
-  case MICRO: channel2 = 1e-6;break;
-  case NANO:  channel2 = 1e-9; break;
+    m_samplesChannel1->addSample(QPointF((time - m_samplingStartTimestamp) / 1000., toValue(vc->data1)));
   }
 
   if (vc->data2.unit != UNKNOWN)
   {
-    addSample(1,time,channel2 * vc->data2.value);
+    if (NULL == m_samplesChannel2)
+      m_samplesChannel2 = createSampleSeries(toMMGUIUnit(vc->data2.unit));
+
+    m_samplesChannel2->addSample(QPointF((time - m_samplingStartTimestamp) / 1000., toValue(vc->data2)));
   }
 
   emit dataChanged();
 
+}
+
+void VoltcraftGDM70x::resetSamples()
+{
+  m_samplesChannel1 = NULL;
+  m_samplesChannel2 = NULL;
+
+  MultimeterAdapter::resetSamples();
+}
+
+void VoltcraftGDM70x::startSampling()
+{
+  MultimeterAdapter::startSampling();
+  m_samplingStartTimestamp = QDateTime::currentMSecsSinceEpoch();
+}
+
+SampleUnit
+VoltcraftGDM70x::toMMGUIUnit(vc_unit unit)
+{
+  static const SampleUnit s_VcUnit2MMGUIUnit[] =
+  {
+    UNIT_UNKNOWN,
+    UNIT_VOLT_AC,
+    UNIT_VOLT_DC,
+    UNIT_AMPERE_AC,
+    UNIT_AMPERE_DC,
+    UNIT_OHM,
+    UNIT_FARAD,
+    UNIT_HERZ,
+    UNIT_VOLT_DC,
+    UNIT_VOLT_DC,
+    UNIT_TEMP_C,
+    UNIT_TEMP_F,
+    UNIT_RH,
+    UNIT_PASCAL,
+    UNIT_PSI
+  };
+
+  return s_VcUnit2MMGUIUnit[unit];
 }
 
 QStringList

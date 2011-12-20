@@ -71,6 +71,8 @@ void MainWindow::changeAdapter()
     delete labels.takeFirst();
 
   disconnect(this,SLOT(refreshData()));
+  disconnect(this,SLOT(sampleSeriesAdded(int)));
+  disconnect(this,SLOT(sampleSeriesReset()));
 
   if (adapter)
   {
@@ -97,6 +99,7 @@ void MainWindow::changeAdapter()
   if (not adapter)
     return;
 
+  /*
   for(int i = 0; i < adapter->getChannelCount(); i++)
   {
     QLabel *label = new QLabel();
@@ -123,33 +126,46 @@ void MainWindow::changeAdapter()
 
     curve->attach(ui->plot);
   }
-
+*/
   refreshData();
+
+  connect(adapter,SIGNAL(sampleSeriesAdded(int)),
+          this, SLOT(sampleSeriesAdded(int)));
+
+  connect(adapter,SIGNAL(sampleSeriesReset()),
+          this, SLOT(sampleSeriesReset()));
 
   connect(adapter,SIGNAL(dataChanged()),
           this, SLOT(refreshData()));
 
   connect(ui->startButton, SIGNAL(clicked()),
           adapter,SLOT(startSampling()));
+
   connect(ui->stopButton, SIGNAL(clicked()),
           adapter, SLOT(stopSampling()));
 }
 
 void MainWindow::refreshData()
 {
+  MultimeterAdapter::ReadingsList readings = adapter->getCurrentReadings();
+
   QList<QLabel *> labels = ui->currentReadings->findChildren<QLabel*>("reading");
 
-  for (int i = 0; i < labels.count(); i++)
-    labels.at(i)->setText(adapter->getChannelReading(i));
-
-  QwtPlotItemList curves = ui->plot->itemList(QwtPlotItem::Rtti_PlotCurve);
-
-  for(int i = 0; i < curves.count(); i++)
+  while(readings.count() > labels.count())
   {
-    QwtPlotCurve *curve = static_cast<QwtPlotCurve*>(curves[i]);
-
-    curve->setData(new QwtPointSeriesData(adapter->getSamplesList(i)));
+    QLabel *label = new QLabel();
+    label->setObjectName("reading");
+    ui->currentReadings->layout()->addWidget(label);
+    labels.append(label);
   }
+
+  while(readings.count() < labels.count())
+  {
+    delete labels.takeLast();
+  }
+
+  for (int i = 0; i < labels.count(); i++)
+    labels.at(i)->setText(QString("%1 %2").arg(readings.at(i).second,5,'f',4).arg(toString(readings.at(i).first)));
 
   ui->plot->replot();
 }
@@ -164,6 +180,48 @@ void MainWindow::refreshAdapters()
   {
     ui->deviceSelector->addItem(adapters.at(i)->getName(), adapters.at(i)->getUri());
   }
+}
+
+const char*
+MainWindow::toString(SampleUnit unit)
+{
+  static const char* s_units[UNIT_RESERVED_MAX] = {
+    "Unkown Unit",
+    "V (AC)",
+    "V (DC)",
+    "A (AC)",
+    "A (DC)",
+    "Ohm",
+    "F",
+    "Hz",
+    "°C",
+    "°F",
+    "%Rh",
+    "Psi",
+    "Pa"
+  };
+
+  return s_units[unit];
+}
+
+void
+MainWindow::sampleSeriesAdded(int index)
+{
+  SampleSeries * series = adapter->getSampleSeries(index);
+
+  QwtPlotCurve *curve = new QwtPlotCurve();
+
+  curve->setData(series);
+  curve->setTitle(toString(series->unit()));
+
+  ui->plot->enableAxis(curve->yAxis());
+  curve->attach(ui->plot);
+}
+
+void
+MainWindow::sampleSeriesReset()
+{
+  ui->plot->detachItems();
 }
 
 #include "mainwindow.moc"

@@ -20,14 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MULTIMETERADAPTER_H
 #define MULTIMETERADAPTER_H
 
+#include "sampleseries.h"
+
 #include <QObject>
 #include <QVector>
 #include <QPointF>
 #include <QPair>
 #include <QStringList>
 
-class MultimeterAdapter;
 
+class MultimeterAdapter;
 
 class MultimeterAdapterDescriptor
 {
@@ -55,40 +57,39 @@ class MultimeterAdapter : public QObject
 {
   Q_OBJECT
 public:
-  typedef QVector<QPointF> SampleList;
-
   explicit MultimeterAdapter(QObject *parent = 0);
 
-  virtual int                getChannelCount() const;
-  virtual QString            getChannelReading(int channel) const = 0;
+  SampleSeries * getSampleSeries(int index) const {return m_sampleSeriesList.at(index); }
 
-  virtual const SampleList & getSamplesList(int channel) const;
-  virtual QString            getSamplesUnit(int channel) const = 0;
+  typedef QVector<QPair<SampleUnit, qreal> > ReadingsList;
 
-  static QStringList         findDevices();
+  virtual const ReadingsList getCurrentReadings() = 0;
+
+  static QStringList                        findDevices();
 
   static MultimeterAdapter *                createAdapter(const QString uri);
   static MultimeterAdapterDescriptorList &  getAdapterDescriptorList();
 
-  virtual bool isSampling() const;
+  bool isSampling() const;
+
+protected:
+  SampleSeries* createSampleSeries(enum SampleUnit unit);
 
 signals:
   void dataChanged();
+
+  void sampleSeriesAdded(int index);
+
+  void sampleSeriesReset();
 
 public slots:
   virtual void resetSamples();
   virtual void startSampling();
   virtual void stopSampling();
 
-protected slots:
-  void addSample(int channel, quint64 time, qreal value);
-  void setChannelCount(int count);
-
 private:
-  QVector<SampleList> samples;
-
-  bool                samplingEnabled;
-  quint64             timeSamplingStarted;
+  QList<SampleSeries*>     m_sampleSeriesList;
+  bool                     m_samplingActive;
 };
 
 template<class T>

@@ -23,36 +23,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 MultimeterAdapter::MultimeterAdapter(QObject *parent) :
     QObject(parent),
-    samplingEnabled(false)
+    m_samplingActive(false)
 {
 }
 
-int
-MultimeterAdapter::getChannelCount() const
-{
-  return samples.count();
-}
-
-
-const MultimeterAdapter::SampleList &
-MultimeterAdapter::getSamplesList(int channel) const
-{
-  return samples.at(channel);
-}
 
 bool
 MultimeterAdapter::isSampling() const
 {
-  return samplingEnabled;
+  return m_samplingActive;
 }
 
 void
 MultimeterAdapter::resetSamples()
 {
-  for(int i = 0; i < samples.count(); i++)
-    samples[i].clear();
+  while(m_sampleSeriesList.count() > 0)
+      delete m_sampleSeriesList.takeFirst();
 
-  emit dataChanged();
+  emit sampleSeriesReset();
 }
 
 void MultimeterAdapter::startSampling()
@@ -62,13 +50,12 @@ void MultimeterAdapter::startSampling()
 
   resetSamples();
 
-  timeSamplingStarted = QDateTime::currentMSecsSinceEpoch();
-  samplingEnabled     = true;
+  m_samplingActive = true;
 }
 
 void MultimeterAdapter::stopSampling()
 {
-  samplingEnabled = false;
+  m_samplingActive = false;
 }
 
 MultimeterAdapterDescriptorList &
@@ -92,27 +79,18 @@ MultimeterAdapter::createAdapter(const QString uri)
   return NULL;
 }
 
-void
-MultimeterAdapter::addSample(int channel, quint64 time, qreal value)
+SampleSeries*
+MultimeterAdapter::createSampleSeries(SampleUnit unit)
 {
-  if (!isSampling())
-    return;
+  SampleSeries *series = new SampleSeries(unit);
 
-  samples[channel].append(QPointF(
-    (time - timeSamplingStarted) / 1000.0,
-    value));
+  m_sampleSeriesList.append(series);
+
+  emit sampleSeriesAdded(m_sampleSeriesList.count() - 1);
+
+  return series;
 }
 
-void
-MultimeterAdapter::setChannelCount(int count)
-{
-  stopSampling();
-
-  samples.clear();
-
-  while(count--)
-    samples.append(SampleList());
-}
 
 #include "multimeteradapter.moc"
 

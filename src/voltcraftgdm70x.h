@@ -35,16 +35,24 @@ public:
 
   static const QString & getUnit(enum vc_unit u);
 
-  virtual QString getChannelReading(int channel) const;
-  virtual QString getSamplesUnit(int channel) const;
-
   static QStringList         findDevices();
-signals:
+
+  virtual const ReadingsList getCurrentReadings();
 
 public slots:
   void readyRead();
 
+  virtual void resetSamples();
+  virtual void startSampling();
+
 private:
-    struct vc_gdm70x *vc;
+  struct vc_gdm70x *vc;
+
+  quint64       m_samplingStartTimestamp;
+  SampleSeries *m_samplesChannel1;
+  SampleSeries *m_samplesChannel2;
+
+  static SampleUnit toMMGUIUnit(vc_unit unit);
+  static qreal      toValue(const struct vc_gdm70x_data & data);
 };
 #endif // VOLTCRAFTGDM70X_H
