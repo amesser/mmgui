@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDateTime>
 #include <QDir>
+#include <cmath>
 
 using namespace std;
 
@@ -29,6 +30,8 @@ VoltcraftGDM70x::VoltcraftGDM70x(const QString & uri, QObject *parent) :
     m_samplesChannel1(UNIT_UNKNOWN),
     m_samplesChannel2(UNIT_UNKNOWN)
 {
+    vc_gdm70x_verbose = 3;
+
   vc = vc_gdm70x_create();
 
   try {
@@ -130,6 +133,7 @@ VoltcraftGDM70x::toValue(const vc_gdm70x_data &data)
   case MILLI: mult = 1e-3; break;
   case MICRO: mult = 1e-6; break;
   case NANO:  mult = 1e-9; break;
+  case OVER: return NAN;
   }
 
   return data.value * mult;
@@ -144,15 +148,24 @@ VoltcraftGDM70x::readyRead()
 
   if(isSampling())
   {
-      if (vc->data1.unit != UNKNOWN)
+      if (vc->data1.mult == OVER)
       {
+          m_samplesChannel1 = SampleSeries(UNIT_UNKNOWN);
+      }
+      else if (vc->data1.unit != UNKNOWN)
+      {
+
         if (UNIT_UNKNOWN == m_samplesChannel1.unit())
           m_samplesChannel1 = createSampleSeries(toMMGUIUnit(vc->data1.unit));
 
         m_samplesChannel1.addSample(QPointF((time - m_samplingStartTimestamp) / 1000., toValue(vc->data1)));
       }
 
-      if (vc->data2.unit != UNKNOWN)
+      if (vc->data2.mult == OVER)
+      {
+          m_samplesChannel2 = SampleSeries(UNIT_UNKNOWN);
+      }
+      else if (vc->data2.unit != UNKNOWN)
       {
           if (UNIT_UNKNOWN == m_samplesChannel2.unit())
           m_samplesChannel2 = createSampleSeries(toMMGUIUnit(vc->data2.unit));
