@@ -207,12 +207,12 @@ MainWindow::toString(SampleUnit unit)
 void
 MainWindow::sampleSeriesAdded(int index)
 {
-  SampleSeries * series = adapter->getSampleSeries(index);
+  SampleSeries series = adapter->getSampleSeries(index);
 
   QwtPlotCurve *curve = new QwtPlotCurve();
 
-  curve->setData(series);
-  curve->setTitle(toString(series->unit()));
+  curve->setData(new SampleSeries(series));
+  curve->setTitle(toString(series.unit()));
 
   ui->plot->enableAxis(curve->yAxis());
   curve->attach(ui->plot);

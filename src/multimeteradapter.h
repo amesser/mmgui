@@ -59,7 +59,7 @@ class MultimeterAdapter : public QObject
 public:
   explicit MultimeterAdapter(QObject *parent = 0);
 
-  SampleSeries * getSampleSeries(int index) const {return m_sampleSeriesList.at(index); }
+  const SampleSeries getSampleSeries(int index) const {return m_sampleSeriesList.at(index); }
 
   typedef QVector<QPair<SampleUnit, qreal> > ReadingsList;
 
@@ -73,7 +73,7 @@ public:
   bool isSampling() const;
 
 protected:
-  SampleSeries* createSampleSeries(enum SampleUnit unit);
+  SampleSeries createSampleSeries(enum SampleUnit unit);
 
 signals:
   void dataChanged();
@@ -88,7 +88,7 @@ public slots:
   virtual void stopSampling();
 
 private:
-  QList<SampleSeries*>     m_sampleSeriesList;
+  QList<SampleSeries>     m_sampleSeriesList;
   bool                     m_samplingActive;
 };
 

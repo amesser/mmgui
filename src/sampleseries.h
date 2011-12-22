@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SAMPLESERIES_H
 #define SAMPLESERIES_H
 
+#include <QPointF>
 #include <qwt_series_data.h>
 
 enum SampleUnit {
@@ -39,17 +40,41 @@ enum SampleUnit {
     UNIT_RESERVED_MAX
 };
 
-class SampleSeries : public QwtPointSeriesData
+class SampleSeries;
+
+class SampleSeriesPrivateData : public QwtPointSeriesData
+{
+public:
+    explicit SampleSeriesPrivateData(enum SampleUnit unit);
+
+private:
+    int                   m_refcount;
+    const enum SampleUnit m_unit;
+
+    friend class SampleSeries;
+};
+
+class SampleSeries : public QwtSeriesData<QPointF>
 {
 public:
     explicit SampleSeries(enum SampleUnit unit);
+    SampleSeries(const SampleSeries &orig);
 
-    enum  SampleUnit        unit()    const { return m_unit; }
+    virtual ~SampleSeries();
+
+    const SampleSeries & operator =(const SampleSeries &orig);
+
+    enum  SampleUnit        unit()    const { return m_priv->m_unit; }
+
+    virtual size_t size() const {return m_priv->size();}
+    virtual QPointF sample(size_t i) const {return m_priv->sample(i);}
+    virtual QRectF boundingRect() const { return m_priv->boundingRect();}
 
     void addSample(QPointF sample);
 
-protected:
-    const enum SampleUnit m_unit;
+private:
+    SampleSeriesPrivateData* m_priv;
+
 };
 
 #endif // SAMPLESERIES_H

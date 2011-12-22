@@ -49,8 +49,8 @@ private:
   struct vc_gdm70x *vc;
 
   quint64       m_samplingStartTimestamp;
-  SampleSeries *m_samplesChannel1;
-  SampleSeries *m_samplesChannel2;
+  SampleSeries  m_samplesChannel1;
+  SampleSeries  m_samplesChannel2;
 
   static SampleUnit toMMGUIUnit(vc_unit unit);
   static qreal      toValue(const struct vc_gdm70x_data & data);

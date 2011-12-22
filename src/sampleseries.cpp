@@ -19,14 +19,52 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "sampleseries.h"
 
-SampleSeries::SampleSeries(SampleUnit unit):
+SampleSeriesPrivateData::SampleSeriesPrivateData(SampleUnit unit):
     QwtPointSeriesData(),
-    m_unit(unit)
+    m_unit(unit),
+    m_refcount(0)
 {
+
+}
+
+SampleSeries::SampleSeries(SampleUnit unit):
+    QwtSeriesData<QPointF>()
+{
+    m_priv = new SampleSeriesPrivateData(unit);
+    m_priv->m_refcount++;
+}
+
+SampleSeries::SampleSeries(const SampleSeries &orig) :
+    QwtSeriesData<QPointF>()
+{
+    m_priv = orig.m_priv;
+    m_priv->m_refcount++;
+}
+
+SampleSeries::~SampleSeries()
+{
+    m_priv->m_refcount--;
+
+    if (m_priv->m_refcount == 0)
+        delete m_priv;
+}
+
+const SampleSeries &
+SampleSeries::operator =(const SampleSeries &orig)
+{
+    m_priv->m_refcount--;
+
+    if (m_priv->m_refcount == 0)
+        delete m_priv;
+
+    m_priv = orig.m_priv;
+    m_priv->m_refcount++;
 }
 
 void
 SampleSeries::addSample(QPointF sample)
 {
-    d_samples.append(sample);
+    m_priv->d_samples.append(sample);
+    m_priv->d_boundingRect.setWidth(-1);
+    m_priv->d_boundingRect.setHeight(-1);
 }

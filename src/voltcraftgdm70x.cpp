@@ -25,7 +25,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 VoltcraftGDM70x::VoltcraftGDM70x(const QString & uri, QObject *parent) :
-    MultimeterAdapter(parent)
+    MultimeterAdapter(parent),
+    m_samplesChannel1(UNIT_UNKNOWN),
+    m_samplesChannel2(UNIT_UNKNOWN)
 {
   vc = vc_gdm70x_create();
 
@@ -140,20 +142,23 @@ VoltcraftGDM70x::readyRead()
 
   vc_gdm70x_do(this->vc, 1);
 
-  if (vc->data1.unit != UNKNOWN)
+  if(isSampling())
   {
-    if (NULL == m_samplesChannel1)
-      m_samplesChannel1 = createSampleSeries(toMMGUIUnit(vc->data1.unit));
+      if (vc->data1.unit != UNKNOWN)
+      {
+        if (UNIT_UNKNOWN == m_samplesChannel1.unit())
+          m_samplesChannel1 = createSampleSeries(toMMGUIUnit(vc->data1.unit));
 
-    m_samplesChannel1->addSample(QPointF((time - m_samplingStartTimestamp) / 1000., toValue(vc->data1)));
-  }
+        m_samplesChannel1.addSample(QPointF((time - m_samplingStartTimestamp) / 1000., toValue(vc->data1)));
+      }
 
-  if (vc->data2.unit != UNKNOWN)
-  {
-    if (NULL == m_samplesChannel2)
-      m_samplesChannel2 = createSampleSeries(toMMGUIUnit(vc->data2.unit));
+      if (vc->data2.unit != UNKNOWN)
+      {
+          if (UNIT_UNKNOWN == m_samplesChannel2.unit())
+          m_samplesChannel2 = createSampleSeries(toMMGUIUnit(vc->data2.unit));
 
-    m_samplesChannel2->addSample(QPointF((time - m_samplingStartTimestamp) / 1000., toValue(vc->data2)));
+        m_samplesChannel2.addSample(QPointF((time - m_samplingStartTimestamp) / 1000., toValue(vc->data2)));
+      }
   }
 
   emit dataChanged();
@@ -162,10 +167,10 @@ VoltcraftGDM70x::readyRead()
 
 void VoltcraftGDM70x::resetSamples()
 {
-  m_samplesChannel1 = NULL;
-  m_samplesChannel2 = NULL;
+    m_samplesChannel1 = SampleSeries(UNIT_UNKNOWN);
+    m_samplesChannel2 = SampleSeries(UNIT_UNKNOWN);
 
-  MultimeterAdapter::resetSamples();
+    MultimeterAdapter::resetSamples();
 }
 
 void VoltcraftGDM70x::startSampling()

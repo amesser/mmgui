@@ -37,8 +37,7 @@ MultimeterAdapter::isSampling() const
 void
 MultimeterAdapter::resetSamples()
 {
-  while(m_sampleSeriesList.count() > 0)
-      delete m_sampleSeriesList.takeFirst();
+  m_sampleSeriesList.clear();
 
   emit sampleSeriesReset();
 }
@@ -79,10 +78,10 @@ MultimeterAdapter::createAdapter(const QString uri)
   return NULL;
 }
 
-SampleSeries*
+SampleSeries
 MultimeterAdapter::createSampleSeries(SampleUnit unit)
 {
-  SampleSeries *series = new SampleSeries(unit);
+  SampleSeries series(unit);
 
   m_sampleSeriesList.append(series);
 
