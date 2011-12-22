@@ -39,12 +39,12 @@ public:
 
   static const char* toString(SampleUnit unit);
 
+  static const QColor & getColor(SampleUnit unit);
+
 public slots:
   void changeAdapter();
   void refreshData();
   void refreshAdapters();
-
-  const QColor & getChannelColor(int channel) const;
 
   void sampleSeriesAdded(int index);
   void sampleSeriesReset();

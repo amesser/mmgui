@@ -35,6 +35,9 @@ MainWindow::MainWindow(QWidget *parent) :
     refreshAdapters();
 
     changeAdapter();
+
+    connect(ui->deviceSelector,SIGNAL(currentIndexChanged(int)),
+            this, SLOT(changeAdapter()));
 }
 
 MainWindow::~MainWindow()
@@ -45,22 +48,49 @@ MainWindow::~MainWindow()
     delete adapter;
 }
 
-const QColor &
-MainWindow::getChannelColor(int channel) const
+const char*
+MainWindow::toString(SampleUnit unit)
 {
-    static QColor colors[] =
-    {
-        QColor(Qt::red),
-        QColor(Qt::blue),
+  static const char* s_units[UNIT_RESERVED_MAX] = {
+    "Unkown Unit",
+    "V (AC)",
+    "V (DC)",
+    "A (AC)",
+    "A (DC)",
+    "Ohm",
+    "F",
+    "Hz",
+    "°C",
+    "°F",
+    "%Rh",
+    "Psi",
+    "Pa"
+  };
+
+  return s_units[unit];
+}
+const QColor &
+MainWindow::getColor(SampleUnit unit)
+{
+    static const QColor s_colors[UNIT_RESERVED_MAX] = {
+      QColor(Qt::black),
+      QColor(Qt::darkRed),
+      QColor(Qt::darkRed),
+      QColor(Qt::darkBlue),
+      QColor(Qt::darkBlue),
+      QColor(Qt::darkGreen),
+      QColor(238,118,0),
+      QColor(Qt::darkYellow),
+      QColor(Qt::darkMagenta),
+      QColor(Qt::darkMagenta),
+      QColor(165,42,42),
+      QColor(Qt::darkCyan),
+      QColor(Qt::darkCyan),
     };
 
-    static QColor def(Qt::black);
-
-    if ((unsigned int)channel < sizeof(colors) / sizeof(colors[0]))
-        return colors[channel];
-    else
-        return def;
+    return s_colors[unit];
 }
+
 void MainWindow::changeAdapter()
 {
   ui->plot->detachItems(QwtPlotItem::Rtti_PlotCurve);
@@ -165,7 +195,16 @@ void MainWindow::refreshData()
   }
 
   for (int i = 0; i < labels.count(); i++)
-    labels.at(i)->setText(QString("%1 %2").arg(readings.at(i).second,5,'f',4).arg(toString(readings.at(i).first)));
+  {
+      QLabel* label = labels.at(i);
+
+      label->setText(QString("%1 %2").arg(readings.at(i).second,5,'f',4).arg(toString(readings.at(i).first)));
+
+      QPalette palette;
+
+      palette.setColor(QPalette::WindowText, getColor(readings.at(i).first));
+      label->setPalette(palette);
+  }
 
   ui->plot->replot();
 }
@@ -182,27 +221,7 @@ void MainWindow::refreshAdapters()
   }
 }
 
-const char*
-MainWindow::toString(SampleUnit unit)
-{
-  static const char* s_units[UNIT_RESERVED_MAX] = {
-    "Unkown Unit",
-    "V (AC)",
-    "V (DC)",
-    "A (AC)",
-    "A (DC)",
-    "Ohm",
-    "F",
-    "Hz",
-    "°C",
-    "°F",
-    "%Rh",
-    "Psi",
-    "Pa"
-  };
 
-  return s_units[unit];
-}
 
 void
 MainWindow::sampleSeriesAdded(int index)
@@ -213,6 +232,11 @@ MainWindow::sampleSeriesAdded(int index)
 
   curve->setData(new SampleSeries(series));
   curve->setTitle(toString(series.unit()));
+
+  QPen pen(getColor(series.unit()));
+  pen.setWidth(3);
+
+  curve->setPen(pen);
 
   ui->plot->enableAxis(curve->yAxis());
   curve->attach(ui->plot);

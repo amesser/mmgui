@@ -30,8 +30,6 @@ VoltcraftGDM70x::VoltcraftGDM70x(const QString & uri, QObject *parent) :
     m_samplesChannel1(UNIT_UNKNOWN),
     m_samplesChannel2(UNIT_UNKNOWN)
 {
-    vc_gdm70x_verbose = 3;
-
   vc = vc_gdm70x_create();
 
   try {
