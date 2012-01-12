@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "multimeterexportwizard.h"
 
 #include <QLabel>
 
@@ -38,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->deviceSelector,SIGNAL(currentIndexChanged(int)),
             this, SLOT(changeAdapter()));
+
+    connect(ui->exportButton,SIGNAL(clicked()),
+            this,SLOT(exportSamples()));
 }
 
 MainWindow::~MainWindow()
@@ -246,6 +250,13 @@ void
 MainWindow::sampleSeriesReset()
 {
   ui->plot->detachItems();
+}
+
+void
+MainWindow::exportSamples()
+{
+    MultimeterExportWizard wizard(this);
+    wizard.exec();
 }
 
 #include "mainwindow.moc"

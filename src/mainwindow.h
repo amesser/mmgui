@@ -49,6 +49,7 @@ public slots:
   void sampleSeriesAdded(int index);
   void sampleSeriesReset();
 
+  void exportSamples();
 private:
     Ui::MainWindow    *ui;
     MultimeterAdapter *adapter;

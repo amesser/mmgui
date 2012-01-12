@@ -11,7 +11,7 @@ def build(bld):
     features = 'qt4 cxx cxxprogram',
     uselib   = 'QTCORE QTGUI qwt',
     use      = 'qwt vc-gdm70x',
-    source   = 'main.cpp mainwindow.cpp mainwindow.ui multimeteradapter.cpp sampleseries.cpp voltcraftgdm70x.cpp',
-    includes = '.',
+    source   = 'main.cpp mainwindow.cpp mainwindow.ui multimeteradapter.cpp sampleseries.cpp voltcraftgdm70x.cpp multimeter/multimeterexportwizard.cpp multimeter/multimeterexportwizard.ui',
+    includes = '. ./multimeter',
     target   = 'mmgui',
   )
