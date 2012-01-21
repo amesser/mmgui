@@ -28,7 +28,11 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QListWidget" name="list_datasets"/>
+     <widget class="QListWidget" name="list_datasets">
+      <property name="selectionMode">
+       <enum>QAbstractItemView::MultiSelection</enum>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -78,7 +82,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextBrowser" name="text_preview"/>
+         <widget class="QPlainTextEdit" name="text_preview">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

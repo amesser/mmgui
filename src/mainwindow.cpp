@@ -52,27 +52,6 @@ MainWindow::~MainWindow()
     delete adapter;
 }
 
-const char*
-MainWindow::toString(SampleUnit unit)
-{
-  static const char* s_units[UNIT_RESERVED_MAX] = {
-    "Unkown Unit",
-    "V (AC)",
-    "V (DC)",
-    "A (AC)",
-    "A (DC)",
-    "Ohm",
-    "F",
-    "Hz",
-    "°C",
-    "°F",
-    "%Rh",
-    "Psi",
-    "Pa"
-  };
-
-  return s_units[unit];
-}
 const QColor &
 MainWindow::getColor(SampleUnit unit)
 {
@@ -202,7 +181,7 @@ void MainWindow::refreshData()
   {
       QLabel* label = labels.at(i);
 
-      label->setText(QString("%1 %2").arg(readings.at(i).second,5,'f',4).arg(toString(readings.at(i).first)));
+      label->setText(QString("%1 %2").arg(readings.at(i).second,5,'f',4).arg(SampleSeries::toString(readings.at(i).first)));
 
       QPalette palette;
 
@@ -235,7 +214,7 @@ MainWindow::sampleSeriesAdded(int index)
   QwtPlotCurve *curve = new QwtPlotCurve();
 
   curve->setData(new SampleSeries(series));
-  curve->setTitle(toString(series.unit()));
+  curve->setTitle(SampleSeries::toString(series.unit()));
 
   QPen pen(getColor(series.unit()));
   pen.setWidth(3);
@@ -255,8 +234,11 @@ MainWindow::sampleSeriesReset()
 void
 MainWindow::exportSamples()
 {
-    MultimeterExportWizard wizard(this);
-    wizard.exec();
+    if (adapter)
+    {
+        MultimeterExportWizard wizard(adapter,this);
+        wizard.exec();
+    }
 }
 
 #include "mainwindow.moc"

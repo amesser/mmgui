@@ -72,6 +72,7 @@ public:
 
     void addSample(QPointF sample);
 
+    static const char* toString(SampleUnit unit);
 private:
     SampleSeriesPrivateData* m_priv;
 

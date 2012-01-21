@@ -59,7 +59,8 @@ class MultimeterAdapter : public QObject
 public:
   explicit MultimeterAdapter(QObject *parent = 0);
 
-  const SampleSeries getSampleSeries(int index) const {return m_sampleSeriesList.at(index); }
+  const SampleSeries          getSampleSeries(int index) const {return m_sampleSeriesList.at(index); }
+  const QList<SampleSeries> & getSampleSeries() const {return m_sampleSeriesList; }
 
   typedef QVector<QPair<SampleUnit, qreal> > ReadingsList;
 

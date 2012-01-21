@@ -90,6 +90,5 @@ MultimeterAdapter::createSampleSeries(SampleUnit unit)
   return series;
 }
 
-
 #include "multimeteradapter.moc"
 

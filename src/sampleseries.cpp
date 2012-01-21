@@ -68,3 +68,25 @@ SampleSeries::addSample(QPointF sample)
     m_priv->d_boundingRect.setWidth(-1);
     m_priv->d_boundingRect.setHeight(-1);
 }
+
+const char*
+SampleSeries::toString(SampleUnit unit)
+{
+  static const char* s_units[UNIT_RESERVED_MAX] = {
+    "Unkown Unit",
+    "V (AC)",
+    "V (DC)",
+    "A (AC)",
+    "A (DC)",
+    "Ohm",
+    "F",
+    "Hz",
+    "°C",
+    "°F",
+    "%Rh",
+    "Psi",
+    "Pa"
+  };
+
+  return s_units[unit];
+}

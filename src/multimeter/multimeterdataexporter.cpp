@@ -17,40 +17,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "multimeterdataexporter.h"
 
-#include <QMainWindow>
-
-#include <qwt_plot_curve.h>
-#include "multimeteradapter.h"
-
-namespace Ui {
-    class MainWindow;
+MultimeterDataExporter::MultimeterDataExporter()
+{
 }
 
-class MainWindow : public QMainWindow
+MultimeterDataExporterCreator::MultimeterDataExporterCreator()
 {
-    Q_OBJECT
+    list().append(this);
+}
 
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+MultimeterDataExporterCreator::~MultimeterDataExporterCreator()
+{
+    list().removeOne(this);
+}
 
-  static const QColor & getColor(SampleUnit unit);
-
-public slots:
-  void changeAdapter();
-  void refreshData();
-  void refreshAdapters();
-
-  void sampleSeriesAdded(int index);
-  void sampleSeriesReset();
-
-  void exportSamples();
-private:
-    Ui::MainWindow    *ui;
-    MultimeterAdapter *adapter;
-};
-
-#endif // MAINWINDOW_H
+MultimeterDataExporterCreator::CreatorList &
+MultimeterDataExporterCreator::list()
+{
+    static CreatorList list;
+    return list;
+}
